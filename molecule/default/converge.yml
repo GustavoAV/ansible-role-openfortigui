@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  tasks:
+    - name: Include openfortigui
+      ansible.builtin.include_role:
+        name: gustavoav.openfortigui

@@ -1,0 +1,35 @@
+---
+- name: Install dependencies
+  ansible.builtin.apt:
+    name: "{{ openfortigui_apt_dependencies }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Initialize gpg and add gpg key
+  ansible.builtin.shell:
+    cmd: gpg -k && gpg
+      --no-default-keyring
+      --keyring {{ openfortigui_apt_gpg_key_path }}
+      --keyserver hkp://keyserver.ubuntu.com:80
+      --recv-keys 23CAE45582EB0928
+    creates: "{{ openfortigui_apt_gpg_key_path }}"
+
+# Gets the proper codename even when running on Ubuntu based (e.g. Linux Mint)
+- name: Gets distro codename
+  ansible.builtin.shell:
+    cmd: . /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}"
+  changed_when: false
+  register: openfortigui_distro_codename
+
+- name: Add repository
+  ansible.builtin.apt_repository:
+    repo: "{{ openfortigui_apt_repo_string }}"
+    state: present
+
+- name: Install package
+  ansible.builtin.apt:
+    name: openfortigui
+    state: present
+    update_cache: true
+    cache_valid_time: 3600

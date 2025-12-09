@@ -1,0 +1,46 @@
+---
+- name: Specific tasks for this OS
+  ansible.builtin.include_tasks:
+    file: "{{ ansible_facts['os_family'] | lower }}.yml"
+  vars:
+    ansible_become: true
+
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: "{{ item.mode }}"
+    state: directory
+  loop:
+    - path: "{{ openfortigui_user_config_dir }}"
+      mode: "0750"
+    - path: "{{ openfortigui_user_service_dir }}"
+      mode: "0755"
+
+- name: Create config file
+  ansible.builtin.copy:
+    content: "{{ openfortigui_main_conf }}"
+    dest: "{{ openfortigui_user_config_dir }}/main.conf"
+    mode: "0644"
+    backup: true
+  diff: true
+  notify: Restart service
+
+- name: Create systemd service
+  ansible.builtin.copy:
+    src: openfortigui.service
+    dest: "{{ openfortigui_user_service_dir }}/"
+    mode: "0644"
+    backup: true
+  notify:
+    - Reload systemd
+    - Restart service
+
+- name: Apply notified handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Start and enable service
+  ansible.builtin.systemd:
+    name: openfortigui
+    state: started
+    scope: "{{ openfortigui_service_scope }}"
+    enabled: true

@@ -1,0 +1,60 @@
+---
+# Directories
+openfortigui_user_config_dir: ~/.openfortigui
+openfortigui_user_service_dir: >-
+  {%- if ansible_facts['user_uid'] == 0 -%}
+    /etc/systemd/system
+  {%- else -%}
+    ~/.config/systemd/user
+  {%- endif -%}
+
+# Apt dependencies
+openfortigui_apt_dependencies: [gnupg]
+
+# Gpg key path
+openfortigui_apt_gpg_key_path: /usr/share/keyrings/iteas-keyring.gpg
+
+# Apt repository string
+openfortigui_apt_repo_string: >-
+  deb [arch=amd64 signed-by={{ openfortigui_apt_gpg_key_path }}]
+  https://apt.iteas.at/iteas {{ openfortigui_distro_codename.stdout }} main
+
+# AES values for encrypting
+openfortigui_aes_iv: "{{ lookup('ansible.builtin.password', '/dev/null', length=16, chars=['ascii_letters', 'digits']) }}"
+openfortigui_aes_key: "{{ lookup('ansible.builtin.password', '/dev/null', length=16, chars=['ascii_letters', 'digits']) }}"
+
+# OpenVPN main configuration
+openfortigui_main_conf: |
+  [checks]
+  sudopresenv=false
+
+  [gui]
+  connect_on_dblclick=false
+  disable_notifications=false
+  main_toolbar_location=4
+
+  [main]
+  aesiv={{ openfortigui_aes_iv }}
+  aeskey={{ openfortigui_aes_key }}
+  changelogrev_read=21
+  debug=false
+  disallow_unsecure_certificates=false
+  setupwizard=true
+  start_minimized=true
+  sudo_preserve_env=true
+  use_system_password_store=false
+
+  [paths]
+  globalvpnprofiles=/etc/openfortigui/vpnprofiles
+  initd=/etc/init.d/openfortigui
+  localvpngroups=~/.openfortigui/vpngroups
+  localvpnprofiles=~/.openfortigui/vpnprofiles
+  logs=~/.openfortigui/logs
+
+# Service scope
+openfortigui_service_scope: >-
+  {%- if ansible_facts['user_uid'] == 0 -%}
+    system
+  {%- else -%}
+    user
+  {%- endif -%}

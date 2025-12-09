@@ -1,0 +1,11 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+    scope: "{{ openfortigui_service_scope }}"
+
+- name: Restart service
+  ansible.builtin.systemd:
+    name: openfortigui
+    state: restarted
+    scope: "{{ openfortigui_service_scope }}"

@@ -1,0 +1,11 @@
+[Unit]
+Description=OpenFortiGUI service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/openfortigui
+ExecStop=/usr/bin/openfortigui --kill-vpn-processes
+
+[Install]
+WantedBy=default.target

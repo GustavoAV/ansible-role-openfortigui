@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: read-all
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install lint dependencies
+        run: pip install ansible-lint
+
+      - name: Run ansible-lint
+        run: ansible-lint .
+        env:
+          FORCE_COLOR: "1"
+
+  molecule:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the codebase
+        uses: actions/checkout@v4
+
+      # Fails without "requirements.txt" for some reason
+      # https://github.com/marketplace/actions/build-and-setup-python#no-file-in--matched-to-requirementstxt-or-pyprojecttoml-make-sure-you-have-checked-out-the-target-repository
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+
+      - name: Run Molecule tests
+        run: molecule test
+        env:
+          # Enable colors in CI logs
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'

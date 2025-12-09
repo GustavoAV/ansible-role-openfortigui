@@ -33,6 +33,12 @@ Create a playbook (e.g: `setup_openfortigui.yml`) and apply with `ansible-playbo
 ---
 - name: Setup openfortigui
   hosts: all
+  vars:
+    # Set these with a 16 chars alphanumeric random string
+    openfortigui_aes_iv: 16-chars-strings
+    openfortigui_aes_key: 16-chars-strings
+    # Configure app to start with user login
+    openfortigui_autostart: true
   # This MUST not be run entirely as root!
   # become: true
   roles: [gustavoav.openfortigui]

@@ -1,4 +1,11 @@
 ---
+- name: Check required values
+  ansible.builtin.assert:
+    that:
+      - openfortigui_aes_iv | length == 16
+      - openfortigui_aes_key | length == 16
+    fail_msg: "'openfortigui_aes_iv' and 'openfortigui_aes_key' need to be set and have exactly 16 characters!"
+
 - name: Specific tasks for this OS
   ansible.builtin.include_tasks:
     file: "{{ ansible_facts['os_family'] | lower }}.yml"
@@ -13,34 +20,20 @@
   loop:
     - path: "{{ openfortigui_user_config_dir }}"
       mode: "0750"
-    - path: "{{ openfortigui_user_service_dir }}"
-      mode: "0755"
+    - path: "{{ openfortigui_user_autostart_dir }}"
+      mode: "0775"
 
 - name: Create config file
   ansible.builtin.copy:
     content: "{{ openfortigui_main_conf }}"
     dest: "{{ openfortigui_user_config_dir }}/main.conf"
-    mode: "0644"
+    mode: "0664"
     backup: true
   diff: true
-  notify: Restart service
 
-- name: Create systemd service
-  ansible.builtin.copy:
-    src: openfortigui.service
-    dest: "{{ openfortigui_user_service_dir }}/"
-    mode: "0644"
-    backup: true
-  notify:
-    - Reload systemd
-    - Restart service
-
-- name: Apply notified handlers
-  ansible.builtin.meta: flush_handlers
-
-- name: Start and enable service
-  ansible.builtin.systemd:
-    name: openfortigui
-    state: started
-    scope: "{{ openfortigui_service_scope }}"
-    enabled: true
+- name: Configure app autostart
+  ansible.builtin.file:
+    src: /usr/share/applications/openfortigui.desktop
+    dest: "{{ openfortigui_user_autostart_dir }}/openfortigui.desktop"
+    state: link
+  when: openfortigui_autostart is truthy

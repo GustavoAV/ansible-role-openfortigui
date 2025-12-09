@@ -1,12 +1,7 @@
 ---
 # Directories
 openfortigui_user_config_dir: ~/.openfortigui
-openfortigui_user_service_dir: >-
-  {%- if ansible_facts['user_uid'] == 0 -%}
-    /etc/systemd/system
-  {%- else -%}
-    ~/.config/systemd/user
-  {%- endif -%}
+openfortigui_user_autostart_dir: ~/.config/autostart
 
 # Apt dependencies
 openfortigui_apt_dependencies: [gnupg]
@@ -20,8 +15,8 @@ openfortigui_apt_repo_string: >-
   https://apt.iteas.at/iteas {{ openfortigui_distro_codename.stdout }} main
 
 # AES values for encrypting
-openfortigui_aes_iv: "{{ lookup('ansible.builtin.password', '/dev/null', length=16, chars=['ascii_letters', 'digits']) }}"
-openfortigui_aes_key: "{{ lookup('ansible.builtin.password', '/dev/null', length=16, chars=['ascii_letters', 'digits']) }}"
+openfortigui_aes_iv: ""
+openfortigui_aes_key: ""
 
 # OpenVPN main configuration
 openfortigui_main_conf: |
@@ -51,10 +46,5 @@ openfortigui_main_conf: |
   localvpnprofiles=~/.openfortigui/vpnprofiles
   logs=~/.openfortigui/logs
 
-# Service scope
-openfortigui_service_scope: >-
-  {%- if ansible_facts['user_uid'] == 0 -%}
-    system
-  {%- else -%}
-    user
-  {%- endif -%}
+# Configure app to start with user login
+openfortigui_autostart: false

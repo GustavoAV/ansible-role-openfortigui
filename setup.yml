@@ -1,9 +1,0 @@
----
-- name: Setup openfortigui
-  hosts: all
-  # This MUST not be run entirely as root!
-  # become: true
-  tasks:
-    - name: Include role openfortigui # noqa: role-name[path]
-      ansible.builtin.include_role:
-        name: ../ansible-role-openfortigui
